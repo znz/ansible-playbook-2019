@@ -1,0 +1,8 @@
+[k3s_master]
+k3s-00
+
+[k3s_worker]
+k3s-[01:10]
+
+[all:vars]
+stage=production

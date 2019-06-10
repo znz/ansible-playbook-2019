@@ -1,0 +1,97 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: "Install curl"
+    apt:
+      name: curl
+
+- hosts: k3s_master
+  gather_facts: no
+  tasks:
+  - name: "Install k3s"
+    shell: |
+      curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable-agent" sh -
+    args:
+     warn: no
+    register: install_k3s
+  - debug:
+      var: install_k3s.stdout_lines
+  - debug:
+      var: install_k3s.stderr_lines
+  - name: "Get token"
+    fetch:
+      src: "/var/lib/rancher/k3s/server/node-token"
+      dest: "tmp/k3s-node-token"
+      flat: yes
+  - name: "Get k3s.yaml"
+    # copy or merge k3s.yaml to ~/.kube/config
+    fetch:
+      src: "/etc/rancher/k3s/k3s.yaml"
+      dest: "tmp/k3s.yaml"
+      flat: yes
+  - name: "Allow all access to tcp port 6443"
+    ufw:
+      comment: "k3s server"
+      rule: allow
+      port: 6443
+      proto: tcp
+
+- hosts: k3s_worker
+  vars:
+    k3s_master_name: 'k3s-00'
+    deleted_nodes: []
+  tasks:
+  - name: "Allow out to 6443/tcp"
+    ufw:
+      comment: "to k3s server"
+      rule: allow
+      direction: out
+      to_port: 6443
+      proto: tcp
+  - name: "Allow out to 8472/udp"
+    ufw:
+      comment: "to k3s nodes"
+      rule: allow
+      direction: out
+      to_ip: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+      to_port: 8472
+      proto: udp
+    with_items: "{{ play_hosts }}"
+  - name: "Allow to 8472/udp"
+    ufw:
+      comment: "from k3s nodes"
+      rule: allow
+      from_ip: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+      to_port: 8472
+      proto: udp
+    with_items: "{{ play_hosts }}"
+
+  - name: "Delete allow out to 8472/udp"
+    ufw:
+      comment: "to k3s nodes"
+      rule: allow
+      direction: out
+      to_ip: "{{ item }}"
+      to_port: 8472
+      proto: udp
+    with_items: "{{ deleted_nodes }}"
+  - name: "Delete allow to 8472/udp"
+    ufw:
+      comment: "from k3s nodes"
+      rule: allow
+      from_ip: "{{ item }}"
+      to_port: 8472
+      proto: udp
+    with_items: "{{ deleted_nodes }}"
+
+  - name: "Install k3s"
+    shell: |
+      curl -sfL https://get.k3s.io | K3S_URL=https://{{ k3s_master_name }}:6443 K3S_TOKEN={{ lookup('file', 'tmp/k3s-node-token') }} sh -
+    args:
+      warn: no
+    register: install_k3s
+  - debug:
+      var: install_k3s.stdout_lines
+  - debug:
+      var: install_k3s.stderr_lines

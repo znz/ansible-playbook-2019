@@ -1,0 +1,20 @@
+- hosts: k3s_worker
+  gather_facts: no
+  tasks:
+  - name: "Allow route to pod 9000/tcp"
+    ufw:
+      comment: "route to pod 9000/tcp"
+      rule: allow
+      route: yes
+      to_ip: "10.42.0.0/16"
+      to_port: 9000
+      proto: tcp
+      #delete: yes
+  - name: "Allow input to 30521/tcp"
+    ufw:
+      comment: "to 30521/tcp"
+      rule: allow
+      direction: in
+      to_port: 30521
+      proto: tcp
+      #delete: yes

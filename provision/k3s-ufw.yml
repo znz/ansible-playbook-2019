@@ -1,0 +1,71 @@
+- hosts: k3s_worker
+  gather_facts: no
+  tasks:
+  - name: "Allow k3s DNS in"
+    ufw:
+      comment: "k3s DNS in"
+      rule: allow
+      direction: in
+      to_ip: "10.43.0.0/16"
+      to_port: 53
+      #delete: yes
+  - name: "Allow k3s DNS out"
+    ufw:
+      comment: "k3s DNS out"
+      rule: allow
+      direction: out
+      to_ip: "10.43.0.0/16"
+      to_port: 53
+      #delete: yes
+  - name: "Allow route DNS"
+    ufw:
+      comment: "route DNS"
+      rule: allow
+      route: yes
+      to_port: 53
+      #delete: yes
+
+  - name: "Allow k3s Liveness probe in"
+    ufw:
+      comment: "k3s Liveness probe"
+      rule: allow
+      direction: in
+      to_ip: "10.43.0.0/16"
+      to_port: 8080
+      proto: tcp
+      #delete: yes
+  - name: "Allow k3s Liveness probe out"
+    ufw:
+      comment: "k3s Liveness probe"
+      rule: allow
+      direction: out
+      to_ip: "10.43.0.0/16"
+      to_port: 8080
+      proto: tcp
+      #delete: yes
+  - name: "Allow route 8080/tcp"
+    ufw:
+      comment: "route 8080/tcp"
+      rule: allow
+      route: yes
+      to_port: 8080
+      proto: tcp
+      #delete: yes
+
+  - name: "Allow route HTTPS"
+    ufw:
+      comment: "route HTTPS"
+      rule: allow
+      route: yes
+      to_port: 443
+      proto: tcp
+      #delete: yes
+
+  - name: "Allow route HTTP"
+    ufw:
+      comment: "route HTTP"
+      rule: allow
+      route: yes
+      to_port: 80
+      proto: tcp
+      #delete: yes

@@ -3,5 +3,6 @@
 /.vagrant/
 /provision/inventory/production
 /provision/roles/*.*
+/provision/tmp/
 /provision/vars/*-*.yml
 /provision/vars/production.yml

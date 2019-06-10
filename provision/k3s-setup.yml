@@ -1,0 +1,38 @@
+---
+- hosts: all
+  vars_files:
+  - vars/{{ stage }}.yml
+  pre_tasks:
+  - name: "Set hostname"
+    hostname:
+      name: "{{ inventory_hostname }}"
+  - name: "Install etckeeper"
+    apt: name=etckeeper
+  roles:
+  - role: znz.ufw
+    ufw_default_forward_policy: reject
+    ufw_allow_in_tcp:
+    - comment: "HTTP"
+      port: 80
+    - comment: "HTTPS"
+      port: 443
+    - comment: "SSH"
+      port: 22
+    ufw_limit_in_tcp: []
+    ufw_allow_out_tcp:
+    - comment: "HTTP"
+      port: 80
+    - comment: "HTTPS"
+      port: 443
+    - comment: "SSH"
+      port: 22
+  - role: znz.journald
+  - role: znz.sshd
+  - role: znz.unattended-upgrades
+  - role: znz.nadoka
+  tasks:
+  - lineinfile:
+      path: '/etc/hosts'
+      regexp: "^{{ hostvars[item]['ansible_default_ipv4']['address'] | regex_escape() }} "
+      line: "{{ hostvars[item]['ansible_default_ipv4']['address'] }} {{ item }}"
+    with_items: "{{ play_hosts }}"
