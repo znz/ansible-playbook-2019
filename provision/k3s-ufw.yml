@@ -1,6 +1,16 @@
 - hosts: k3s_worker
   gather_facts: no
   tasks:
+  - name: "Allow cni0 in"
+    ufw:
+      comment: "cni0 in"
+      rule: allow
+      interface: cni0
+      direction: in
+      from_ip: "10.42.0.0/16"
+      to_ip: "127.0.0.1"
+      #delete: yes
+
   - name: "Allow k3s DNS in"
     ufw:
       comment: "k3s DNS in"
@@ -25,21 +35,21 @@
       to_port: 53
       #delete: yes
 
-  - name: "Allow k3s Liveness probe in"
+  - name: "Allow k3s coredns Liveness probe in"
     ufw:
-      comment: "k3s Liveness probe"
+      comment: "k3s coredns Liveness probe"
       rule: allow
       direction: in
-      to_ip: "10.43.0.0/16"
+      to_ip: "10.42.1.11"
       to_port: 8080
       proto: tcp
       #delete: yes
-  - name: "Allow k3s Liveness probe out"
+  - name: "Allow k3s coredns Liveness probe out"
     ufw:
-      comment: "k3s Liveness probe"
+      comment: "k3s coredns Liveness probe"
       rule: allow
       direction: out
-      to_ip: "10.43.0.0/16"
+      to_ip: "10.42.1.11"
       to_port: 8080
       proto: tcp
       #delete: yes
@@ -49,6 +59,25 @@
       rule: allow
       route: yes
       to_port: 8080
+      proto: tcp
+      #delete: yes
+
+  - name: "Allow k3s coredns kubernetes in"
+    ufw:
+      comment: "k3s coredns kubernetes"
+      rule: allow
+      direction: in
+      to_ip: "10.43.0.1"
+      to_port: "443"
+      proto: tcp
+      #delete: yes
+  - name: "Allow k3s coredns kubernetes out"
+    ufw:
+      comment: "k3s coredns kubernetes"
+      rule: allow
+      direction: out
+      to_ip: "10.43.0.1"
+      to_port: "443"
       proto: tcp
       #delete: yes
 
