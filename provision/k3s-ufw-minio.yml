@@ -10,11 +10,3 @@
       to_port: 9000
       proto: tcp
       #delete: yes
-  - name: "Allow input to 30521/tcp"
-    ufw:
-      comment: "to 30521/tcp"
-      rule: allow
-      direction: in
-      to_port: 30521
-      proto: tcp
-      #delete: yes
