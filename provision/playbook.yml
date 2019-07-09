@@ -3,7 +3,7 @@
   become: yes
   vars_files:
   - vars/{{ stage }}.yml
-  - vars/{{ inventory_hostname }}.yml
+  #- vars/{{ inventory_hostname }}.yml
   pre_tasks:
   - name: "Install etckeeper"
     apt: name=etckeeper
@@ -29,8 +29,8 @@
   - role: znz.sshd
   - role: znz.unattended-upgrades
   - role: znz.nadoka
-  - role: mailuser
-  - role: znz.dovecot-postfix
-  tasks:
-  - name: 'Install logwatch'
-    apt: name=logwatch
+#  - role: mailuser
+#  - role: znz.dovecot-postfix
+#  tasks:
+#  - name: 'Install logwatch'
+#    apt: name=logwatch
